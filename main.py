@@ -26,17 +26,17 @@ username, playlist_id, playlist_name = playlist_uri.split(':')[1], playlist_uri.
 sp_tracks = sp.user_playlist(username, playlist_id, 'tracks')
 
 # Creating a dataframe with basic details on the track, e.g artist name, album name, track name
-names_df = pd.DataFrame(columns=sp_tracks['tracks']['items'][0]['track'].keys())
+playlist_df = pd.DataFrame(columns=sp_tracks['tracks']['items'][0]['track'].keys())
 
 # Adding the data into the df
 for track in sp_tracks['tracks']['items']:
-    names_df.loc[len(names_df)] = track['track']
+    playlist_df.loc[len(playlist_df)] = track['track']
 
 # Cleaning up columns in our dataframe to make them more readable and to consist of only relevant/interesting data.
 
 # First removing any columns that are completely of no interest
 
-names_df = names_df.drop(columns=['available_markets', 'disc_number', 'episode', 'explicit', 'external_ids', 'external_urls', 'href', 'is_local', 'track', 'track_number', 'type', 'uri', 'preview_url'])
+playlist_df = playlist_df.drop(columns=['available_markets', 'disc_number', 'episode', 'explicit', 'external_ids', 'external_urls', 'href', 'is_local', 'track', 'track_number', 'type', 'uri', 'preview_url'])
 
 # Keys that we want are: album_type, name, release_date, total_tracks
 def filter_album(album):
@@ -55,18 +55,21 @@ def filter_album(album):
     return new_data
 
 # Filtering every album row
-names_df['album'] = names_df['album'].apply(lambda x: filter_album(x))
+playlist_df['album'] = playlist_df['album'].apply(lambda x: filter_album(x))
 
 # We just want the artist's name from that column
-names_df['artists'] = names_df['artists'].apply(lambda x: x[0]['name'])
+playlist_df['artists'] = playlist_df['artists'].apply(lambda x: x[0]['name'])
 
 # Putting the data into a csv file
-# names_df.to_csv('results.csv')
+# playlist_df.to_csv('results.csv')
 
 # Now moving on to get the genres of each track. This one is different as we can only access genres from the album the song is in.
 # Hopefully it works with singles
 album_df = pd.DataFrame(columns=sp.album('spotify:album:3fSff3bKd7pS7kLYiNakMV').keys())
 
-# So we need to go through our names_df to get the URI of each album that each song is from and then add the album to a new database, grab the genres and other relevant stuff and keep them somewhere.
+# So we need to go through our playlist_df to get the URI of each album that each song is from and then add the album to a new database, grab the genres and other relevant stuff and keep them somewhere.
 
-print(album_df)
+for album in playlist_df['album']:
+    album_df.loc[len(album_df)] = sp.album(album['uri']).values()
+
+album_df.to_csv('albums.csv')
