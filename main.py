@@ -47,23 +47,8 @@ print("Populating playlist DataFrame...\n")
 for track in sp_tracks['tracks']['items']:
     playlist_df.loc[len(playlist_df)] = track['track']
 
-# Getting all the ids for each song in the playlist
-playlist_tracks = [song_id for song_id in playlist_df['id']]
-# print(playlist_tracks)
-
-track_features = sp.audio_features(playlist_tracks)
-
-# print(track_features[0].keys())
-
-features_df = pd.DataFrame(columns=track_features[0].keys(), data=track_features)
-
-features_df = features_df.drop(columns=['type','uri','track_href','analysis_url','duration_ms','time_signature'])
-
-features_df.to_csv('features.csv')
-
 # Cleaning up columns in our dataframe to make them more readable and to consist of only relevant/interesting data.
 
-"""
 print("Cleaning DataFrame...\n")
 
 # First removing any columns that are completely of no interest
@@ -117,10 +102,25 @@ for artist in playlist_df['artist_id']:
     artist_df.loc[len(artist_df)] = sp.artist(artist).values()
 
 # artist_df.to_csv('artists.csv')
-
 playlist_df['genres'] = artist_df['genres']
+
+print('Getting audio features...')
+
+# Getting all the ids for each song in the playlist
+playlist_tracks = [song_id for song_id in playlist_df['id']]
+# Getting audio features for every track
+track_features = sp.audio_features(playlist_tracks)
+# Creating a dataframe for these features
+features_df = pd.DataFrame(columns=track_features[0].keys(), data=track_features)
+# Dropping irrelevent columns
+features_df = features_df.drop(columns=['type','uri','track_href','analysis_url','duration_ms','time_signature'])
+
+# Now we're going to join the two dataframes so we have all the data in one
+
+merged_df = pd.merge(playlist_df, features_df)
+
+merged_df.to_csv('merged.csv')
 
 # Putting the data into a csv file
 # playlist_df.to_csv('results.csv')
 print("Complete.")
-"""
