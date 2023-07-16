@@ -47,8 +47,23 @@ print("Populating playlist DataFrame...\n")
 for track in sp_tracks['tracks']['items']:
     playlist_df.loc[len(playlist_df)] = track['track']
 
+# Getting all the ids for each song in the playlist
+playlist_tracks = [song_id for song_id in playlist_df['id']]
+# print(playlist_tracks)
+
+track_features = sp.audio_features(playlist_tracks)
+
+# print(track_features[0].keys())
+
+features_df = pd.DataFrame(columns=track_features[0].keys(), data=track_features)
+
+features_df = features_df.drop(columns=['type','uri','track_href','analysis_url','duration_ms','time_signature'])
+
+features_df.to_csv('features.csv')
+
 # Cleaning up columns in our dataframe to make them more readable and to consist of only relevant/interesting data.
 
+"""
 print("Cleaning DataFrame...\n")
 
 # First removing any columns that are completely of no interest
@@ -59,9 +74,7 @@ playlist_df['artist_id'] = playlist_df['album'].apply(lambda x: x['artists'][0][
 
 # Keys that we want are: album_type, name, release_date, total_tracks
 def filter_album(album):
-    """
-    Little function to filter out irrelevant album data.
-    """
+    # Little function to filter out irrelevant album data.
     new_data = {
     'album_type': None,
     'name': None,
@@ -81,25 +94,22 @@ playlist_df['artists'] = playlist_df['artists'].apply(lambda x: x[0]['name'])
 
 print("Playlist DF Complete!\n")
 
-
-
 print("Analysing artists...\n")
 
-"""
-My code to get the album info. It was not helpful for what I wanted to achieve so I've commented it out.
 
-# # Now moving on to get the genres of each track. This one is different as we can only access genres from the album the song is in.
-# # Hopefully it works with singles
-album_df = pd.DataFrame(columns=sp.album('spotify:album:3fSff3bKd7pS7kLYiNakMV').keys())
+# My code to get the album info. It was not helpful for what I wanted to achieve so I've commented it out.
 
-# # So we need to go through our playlist_df to get the URI of each album that each song is from and then add the album to a new database, grab the genres and other relevant stuff and keep them somewhere.
+# # # Now moving on to get the genres of each track. This one is different as we can only access genres from the album the song is in.
+# # # Hopefully it works with singles
+# album_df = pd.DataFrame(columns=sp.album('spotify:album:3fSff3bKd7pS7kLYiNakMV').keys())
 
-for album in playlist_df['album']:
-    album_df.loc[len(album_df)] = sp.album(album['uri']).values()
+# # # So we need to go through our playlist_df to get the URI of each album that each song is from and then add the album to a new database, grab the genres and other relevant stuff and keep them somewhere.
 
-album_df.to_csv('albums.csv')
+# for album in playlist_df['album']:
+#     album_df.loc[len(album_df)] = sp.album(album['uri']).values()
 
-"""
+# album_df.to_csv('albums.csv')
+
 # Okay so after some trial and error I'm not able to get any genres from any of the albums. We're going to try the artists now.
 artist_df = pd.DataFrame(columns=sp.artist(NPH).keys())
 
@@ -111,5 +121,6 @@ for artist in playlist_df['artist_id']:
 playlist_df['genres'] = artist_df['genres']
 
 # Putting the data into a csv file
-playlist_df.to_csv('results.csv')
+# playlist_df.to_csv('results.csv')
 print("Complete.")
+"""
