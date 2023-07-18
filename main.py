@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
+import requests
+import json
 
 # Loading our environment variables for us
 load_dotenv()
@@ -81,20 +83,6 @@ print("Playlist DF Complete!\n")
 
 print("Analysing artists...\n")
 
-
-# My code to get the album info. It was not helpful for what I wanted to achieve so I've commented it out.
-
-# # # Now moving on to get the genres of each track. This one is different as we can only access genres from the album the song is in.
-# # # Hopefully it works with singles
-# album_df = pd.DataFrame(columns=sp.album('spotify:album:3fSff3bKd7pS7kLYiNakMV').keys())
-
-# # # So we need to go through our playlist_df to get the URI of each album that each song is from and then add the album to a new database, grab the genres and other relevant stuff and keep them somewhere.
-
-# for album in playlist_df['album']:
-#     album_df.loc[len(album_df)] = sp.album(album['uri']).values()
-
-# album_df.to_csv('albums.csv')
-
 # Okay so after some trial and error I'm not able to get any genres from any of the albums. We're going to try the artists now.
 artist_df = pd.DataFrame(columns=sp.artist(NPH).keys())
 
@@ -123,4 +111,55 @@ merged_df.to_csv('merged.csv')
 
 # Putting the data into a csv file
 # playlist_df.to_csv('results.csv')
-print("Complete.")
+
+# Now that we have everything that we can get from the spotify API, we are going to grab some lyrics using Musixmatch's API
+
+"""
+This section will be dedicated to the Musixmatch part of the code. My thoughts and ideas are that we can grab 30% of the lyrics of each song in our playlist using Musixmatch's free API. This will allow us to delve a little deeper into the meaning of songs. We can then use those lyrics and OpenAI's API to put into GPT 3.5 which can summarise the key themes and meanings behind each song into perhaps 5 words each.
+These 5 words will then be associated with every song, along with genre and other audio features if I think they're necessary to include.
+Then, we can get the most commonly occuring genres, themes and song meanings to attach alongside the genres to plug into DALLE 2 which can then give us a playlist cover image.
+"""
+
+# Firstly, let's make sure we can get lyrics first by creating a function
+
+# Getting our API key so we can make requests
+KEY = os.getenv("MM_API_KEY")
+
+def get_lyrics(track_name, artist_name):
+    """
+    Function that gets lyrics for an input track by the input artist.
+    It does so by first finding the musixmatch track id and then using that track id to get lyrics.
+    """
+    api_key = KEY
+    base_url = 'http://api.musixmatch.com/ws/1.1/'
+
+    # Make a search request to get the track_id
+    search_url = base_url + 'track.search'
+    search_params = {
+        'q_track': track_name,
+        'q_artist': artist_name,
+        'apikey': api_key,
+        'format': 'json'
+        }
+
+    response = requests.get(search_url, params=search_params)
+    data = response.json()
+    for track in data['message']['body']['track_list']:
+        # Some songs don't have lyrics attached
+        if track['track']['has_lyrics']:
+            track_id = track['track']['track_id']
+            break
+        return None
+
+    # Make a request to get the lyrics using the track_id
+    lyrics_url = base_url + 'track.lyrics.get'
+    lyrics_params = {
+        'track_id': track_id,
+        'apikey': api_key,
+        'format': 'json'
+        }
+    response = requests.get(lyrics_url, params=lyrics_params)
+    data = response.json()
+    lyrics = data['message']['body']['lyrics']['lyrics_body']
+
+    return lyrics
