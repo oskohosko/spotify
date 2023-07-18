@@ -109,9 +109,6 @@ merged_df = pd.merge(playlist_df, features_df)
 
 merged_df.to_csv('merged.csv')
 
-# Putting the data into a csv file
-# playlist_df.to_csv('results.csv')
-
 # Now that we have everything that we can get from the spotify API, we are going to grab some lyrics using Musixmatch's API
 
 """
@@ -163,3 +160,8 @@ def get_lyrics(track_name, artist_name):
     lyrics = data['message']['body']['lyrics']['lyrics_body']
 
     return lyrics
+
+# Now we can use this function on our main playlist_df to get lyrics for each song.
+
+playlist_df['lyrics'] = playlist_df.apply(lambda row: get_lyrics(row['name'], row['artists']), axis=1)
+playlist_df.to_csv('results.csv')
