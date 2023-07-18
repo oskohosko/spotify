@@ -8,6 +8,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import pandas as pd
 import requests
 import json
+import openai
 
 # Loading our environment variables for us
 load_dotenv()
@@ -30,7 +31,7 @@ TEST_ALBUM = "spotify:album:3fSff3bKd7pS7kLYiNakMV"
 NPH = "500YRyClzP6Z7HtWd1BIje"
 
 # To test before making a json file with all the info etc
-playlist_uri = "spotify:Oskar_Hosken:PROVINCIAL:playlist:07o6kTp4nYhgcbIvVQpcEq"
+playlist_uri = "spotify:Oskar_Hosken:TECHNO:playlist:1lGXPfqwCeSqZ0O5h4yps0"
 like = True
 
 username, playlist_id, playlist_name = playlist_uri.split(':')[1], playlist_uri.split(':')[4], playlist_uri.split(':')[2]
@@ -73,10 +74,8 @@ def filter_album(album):
         new_data[key] = album[key]
     return new_data
 
-# Filtering every album row
 playlist_df['album'] = playlist_df['album'].apply(lambda x: filter_album(x))
 
-# We just want the artist's name from that column
 playlist_df['artists'] = playlist_df['artists'].apply(lambda x: x[0]['name'])
 
 print("Playlist DF Complete!\n")
@@ -89,25 +88,18 @@ artist_df = pd.DataFrame(columns=sp.artist(NPH).keys())
 for artist in playlist_df['artist_id']:
     artist_df.loc[len(artist_df)] = sp.artist(artist).values()
 
-# artist_df.to_csv('artists.csv')
 playlist_df['genres'] = artist_df['genres']
 
-print('Getting audio features...')
+print('Getting audio features...\n')
 
-# Getting all the ids for each song in the playlist
-playlist_tracks = [song_id for song_id in playlist_df['id']]
 # Getting audio features for every track
+playlist_tracks = [song_id for song_id in playlist_df['id']]
 track_features = sp.audio_features(playlist_tracks)
-# Creating a dataframe for these features
 features_df = pd.DataFrame(columns=track_features[0].keys(), data=track_features)
-# Dropping irrelevent columns
+
+# Dropping irrelevent columns and merging
 features_df = features_df.drop(columns=['type','uri','track_href','analysis_url','duration_ms','time_signature'])
-
-# Now we're going to join the two dataframes so we have all the data in one
-
-merged_df = pd.merge(playlist_df, features_df)
-
-merged_df.to_csv('merged.csv')
+playlist_df = pd.merge(playlist_df, features_df)
 
 # Now that we have everything that we can get from the spotify API, we are going to grab some lyrics using Musixmatch's API
 
@@ -130,11 +122,11 @@ def get_lyrics(track_name, artist_name):
     api_key = KEY
     base_url = 'http://api.musixmatch.com/ws/1.1/'
 
-    # Make a search request to get the track_id
+    # Making a search request to get the track_id
     search_url = base_url + 'track.search'
     search_params = {
-        'q_track': track_name,
-        'q_artist': artist_name,
+        'q_track': track_name,      #&q_track=
+        'q_artist': artist_name,    #&q_artist=
         'apikey': api_key,
         'format': 'json'
         }
@@ -148,7 +140,7 @@ def get_lyrics(track_name, artist_name):
             break
         return None
 
-    # Make a request to get the lyrics using the track_id
+    # Making a request to get the lyrics using the track_id
     lyrics_url = base_url + 'track.lyrics.get'
     lyrics_params = {
         'track_id': track_id,
@@ -162,6 +154,13 @@ def get_lyrics(track_name, artist_name):
     return lyrics
 
 # Now we can use this function on our main playlist_df to get lyrics for each song.
+print("Getting lyrics...\n")
+# playlist_df['lyrics'] = playlist_df.apply(lambda row: get_lyrics(row['name'], row['artists']), axis=1)
+playlist_df.to_csv(playlist_name + '.csv')
+print("Complete!")
 
-playlist_df['lyrics'] = playlist_df.apply(lambda row: get_lyrics(row['name'], row['artists']), axis=1)
-playlist_df.to_csv('results.csv')
+"""
+Onto the OpenAI section. This is where we will be using GPT and DALLE to get us key words and themes and images respectively.
+"""
+
+openai.api_key = os.getenv("OPENAI_KEY")
