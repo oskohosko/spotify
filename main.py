@@ -24,7 +24,6 @@ TEST_ALBUM = "spotify:album:3fSff3bKd7pS7kLYiNakMV"     # Test album for columns
 NPH = "500YRyClzP6Z7HtWd1BIje"  # Northeast Party House
 
 
-
 def filter_album(album):
     # Little function to filter out irrelevant album data.
     new_data = {
@@ -57,8 +56,9 @@ def get_lyrics(track_name, artist_name):
 
     response = requests.get(search_url, params=search_params)
     data = response.json()
+    # track_id = 0
     for track in data['message']['body']['track_list']:
-        # Some songs don't have lyrics attached
+        print(track['track']['track_name'])
         if track['track']['has_lyrics']:
             track_id = track['track']['track_id']
             break
@@ -162,7 +162,7 @@ def main():
     """
 
     """
-    playlist_uri = HONKEYTONK
+    playlist_uri = PROVINCIAL
     username, playlist_id, playlist_name = playlist_uri.split(':')[1], playlist_uri.split(':')[4], playlist_uri.split(':')[2]
     print(f"Analysing playlist: {playlist_name}\n")
     # Checking to see if a dataframe has already been created for this playlist
@@ -232,7 +232,6 @@ def main():
         # Audio features are None if their value isn't worth putting into DALLE
         # Putting all features that aren't None in to a list
         features = [feature for feature in audio_feature_cats.values() if feature != None]
-        print(features)
 
         # Cleaning each string of genres and getting them all into individual strings (some returned a list of multiple genres)
         genres_temp = [str(genre).strip("[]").split(", ") for genre in playlist_df['genres']]
