@@ -144,6 +144,19 @@ def summarise_themes(themes: pd.Series):
         ])
     return completion.choices[0].message.content
 
+def get_images(genres, themes, audio_features):
+    """
+    Takes the playlist's genres, themes and audio features and makes a cover image.
+    """
+    openai.api_key = os.getenv("OPENAI_KEY")
+    response = openai.Image.create(
+        prompt=f"music album image, genres: {genres}, themes: {themes}, audio features: {audio_features}, no words, just abstract image",
+        n=4,
+        size="1024x1024",
+        response_format="url"
+        )
+    return response.data
+
 def main():
     """
 
@@ -156,6 +169,42 @@ def main():
     path = './'
     if os.path.isfile(os.path.join(path, filename)):
         playlist_df = pd.read_csv(os.path.join(path, filename))
+        print("Categorising audio features...\n")
+        # Categorising every feature based on their mean values
+        audio_feature_cats = {
+            "danceability": categorise([playlist_df['danceability'].mean(), "danceability"]),
+            "energy": categorise([playlist_df['energy'].mean(), "energy"]),
+            "speechiness": categorise([playlist_df['speechiness'].mean(), "speechiness"]),
+            "acousticness": categorise([playlist_df['acousticness'].mean(), "acousticness"]),
+            "instrumentalness": categorise([playlist_df['instrumentalness'].mean(), "instrumentalness"]),
+            "valence": categorise_valence(playlist_df['valence'].mean()),
+            # "tempo": round(playlist_df['tempo'].mean())     # tempo as a value is easier to understand
+            }
+        # Audio features are None if their value isn't worth putting into DALLE
+        # Putting all features that aren't None in to a list
+        features = [feature for feature in audio_feature_cats.values() if feature != None]
+
+        # Now we are going to look at all the themes of the lyrics and get GPT to summarise them for me, then put them into a list
+        theme_summary = summarise_themes(playlist_df['themes']).split(", ")
+
+        # Cleaning each string of genres and getting them all into individual strings (some returned a list of multiple genres)
+        genres_temp = [str(genre.strip("[]")).split(", ") for genre in playlist_df['genres']]
+        all_genres = [genre.strip("'") for genre in sum(genres_temp, [])]
+
+        # Now let's get the 2 most common genres using the Counter module from collections
+        top_genres_temp = Counter(all_genres).most_common(2)
+        top_genres = [genre[0] for genre in top_genres_temp]
+
+        # Just need to think about how I'm going to format my request to DALLE
+        """
+        music album cover, genres: {genre 1}, {genre 2}, themes: {themes1,2,3,4,5}, audio features: feature1,2,3 etc
+        """
+        print("Generating images...\n")
+        images = get_images(top_genres, theme_summary, features)
+
+        print("Complete!")
+        print(images)
+        return images
         print("Playlist already in system.")
         return None
     # Otherwise, let's go through the analysis stuff
@@ -213,6 +262,7 @@ def main():
         > valence: musical positivity measure. 0 to 1.0 sad, angry to happy, cheerful
         > tempo: bpm
         """
+        print("Categorising audio features...\n")
         # Categorising every feature based on their mean values
         audio_feature_cats = {
             "danceability": categorise([playlist_df['danceability'].mean(), "danceability"]),
@@ -224,29 +274,29 @@ def main():
             # "tempo": round(playlist_df['tempo'].mean())     # tempo as a value is easier to understand
             }
         # Audio features are None if their value isn't worth putting into DALLE
-        print(audio_feature_cats)
         # Putting all features that aren't None in to a list
         features = [feature for feature in audio_feature_cats.values() if feature != None]
 
         # Now we are going to look at all the themes of the lyrics and get GPT to summarise them for me, then put them into a list
         theme_summary = summarise_themes(playlist_df['themes']).split(", ")
-        print(theme_summary)
 
         # Cleaning each string of genres and getting them all into individual strings (some returned a list of multiple genres)
         genres_temp = [str(genre.strip("[]")).split(", ") for genre in playlist_df['genres']]
         all_genres = [genre.strip("'") for genre in sum(genres_temp, [])]
 
         # Now let's get the 2 most common genres using the Counter module from collections
-        top_genres = Counter(all_genres).most_common(2)
-        print(top_genres)
+        top_genres_temp = Counter(all_genres).most_common(2)
+        top_genres = [genre[0] for genre in top_genres_temp]
 
         # Just need to think about how I'm going to format my request to DALLE
         """
         music album cover, genres: {genre 1}, {genre 2}, themes: {themes1,2,3,4,5}, audio features: feature1,2,3 etc
         """
+        print("Generating images...\n")
+        images = get_images(top_genres, theme_summary, features)
 
         print("Complete!")
-        return None
+        return images
 
 
 
