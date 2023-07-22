@@ -232,30 +232,36 @@ def main():
         # Putting all features that aren't None in to a list
         features = [feature for feature in audio_feature_cats.values() if feature != None]
 
-        print("Getting lyrics...\n")
-        # Now that we have everything that we can get from the spotify API, we are going to grab some lyrics using Musixmatch's API
-        playlist_df['lyrics'] = playlist_df.apply(lambda row: get_lyrics(row['name'], row['artists']), axis=1)
-
-        # Onto the OpenAI section. This is where we will be using GPT and DALLE to get us key words and themes and images respectively.
-        print("Analysing themes...\n")
-        playlist_df['themes'] = playlist_df['lyrics'].apply(lambda x: get_themes(x) if x != None else None)
-        playlist_df.to_csv(playlist_name + '.csv')
-
-        # Now we are going to look at all the themes of the lyrics and get GPT to summarise them for me, then put them into a list
-        theme_summary = summarise_themes(playlist_df['themes']).split(", ")
-
         # Cleaning each string of genres and getting them all into individual strings (some returned a list of multiple genres)
         genres_temp = [str(genre).strip("[]").split(", ") for genre in playlist_df['genres']]
         all_genres = [genre.strip("'") for genre in sum(genres_temp, [])]
 
-        # Now let's get the 2 most common genres using the Counter module from collections
-        top_genres_temp = Counter(all_genres).most_common(2)
-        top_genres = [genre[0] for genre in top_genres_temp]
+        # Adding in a condition to check as if the playlist is about the sounds and the instruments rather than the lyrics, there is no point in making the API calls to analyse the lyrics
+        if "Instrumental" or "Very Instrumental" in features:
+            print("Skipping lyrics analysis as playlist is instrumental\n")
+            theme_summary = "Instrumental"
+            # Now let's get the 4 most common genres as there are no themes for the lyrics using the Counter module from collections
+            top_genres_temp = Counter(all_genres).most_common(4)
+            top_genres = [genre[0] for genre in top_genres_temp]
+        else:
+            # Otherwise, let's analyse the lyrics
+            print("Getting lyrics...\n")
+            # Now that we have everything that we can get from the spotify API, we are going to grab some lyrics using Musixmatch's API
+            playlist_df['lyrics'] = playlist_df.apply(lambda row: get_lyrics(row['name'], row['artists']), axis=1)
 
-        # Just need to think about how I'm going to format my request to DALLE
-        """
-        music album cover, genres: {genre 1}, {genre 2}, themes: {themes1,2,3,4,5}, audio features: feature1,2,3 etc
-        """
+            # Onto the OpenAI section. This is where we will be using GPT and DALLE to get us key words and themes and images respectively.
+            print("Analysing themes...\n")
+            playlist_df['themes'] = playlist_df['lyrics'].apply(lambda x: get_themes(x) if x != None else None)
+            playlist_df.to_csv(playlist_name + '.csv')
+
+            # Now we are going to look at all the themes of the lyrics and get GPT to summarise them for me, then put them into a list
+            theme_summary = summarise_themes(playlist_df['themes']).split(", ")
+
+            # Now let's get the 2 most common genres using the Counter module from collections
+            top_genres_temp = Counter(all_genres).most_common(2)
+            top_genres = [genre[0] for genre in top_genres_temp]
+
+        # Now once we have everything ready to generate the playlist image, let's do it
         print("Generating images...\n")
         images = get_images(top_genres, theme_summary, features)
 
