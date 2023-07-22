@@ -19,6 +19,7 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 TECHNO = "spotify:Oskar_Hosken:TECHNO:playlist:1lGXPfqwCeSqZ0O5h4yps0"  # My techno playlist
 PROVINCIAL = "spotify:Oskar_Hosken:PROVINCIAL:playlist:07o6kTp4nYhgcbIvVQpcEq"  # My aussie indie playlist
+HONKEYTONK = "spotify:Connor_Beadman:HonkeyTonk:playlist:0cY35xJb34y825kpPTdbhS"
 TEST_ALBUM = "spotify:album:3fSff3bKd7pS7kLYiNakMV"     # Test album for columns for dataframe
 NPH = "500YRyClzP6Z7HtWd1BIje"  # Northeast Party House
 
@@ -161,9 +162,9 @@ def main():
     """
 
     """
-    playlist_uri = TECHNO
+    playlist_uri = HONKEYTONK
     username, playlist_id, playlist_name = playlist_uri.split(':')[1], playlist_uri.split(':')[4], playlist_uri.split(':')[2]
-
+    print(f"Analysing playlist: {playlist_name}\n")
     # Checking to see if a dataframe has already been created for this playlist
     filename = playlist_name + '.csv'
     path = './'
@@ -231,13 +232,14 @@ def main():
         # Audio features are None if their value isn't worth putting into DALLE
         # Putting all features that aren't None in to a list
         features = [feature for feature in audio_feature_cats.values() if feature != None]
+        print(features)
 
         # Cleaning each string of genres and getting them all into individual strings (some returned a list of multiple genres)
         genres_temp = [str(genre).strip("[]").split(", ") for genre in playlist_df['genres']]
         all_genres = [genre.strip("'") for genre in sum(genres_temp, [])]
 
         # Adding in a condition to check as if the playlist is about the sounds and the instruments rather than the lyrics, there is no point in making the API calls to analyse the lyrics
-        if "Instrumental" or "Very Instrumental" in features:
+        if ("Instrumental" or "Very Instrumental") in features:
             print("Skipping lyrics analysis as playlist is instrumental\n")
             theme_summary = "Instrumental"
             # Now let's get the 4 most common genres as there are no themes for the lyrics using the Counter module from collections
@@ -252,7 +254,6 @@ def main():
             # Onto the OpenAI section. This is where we will be using GPT and DALLE to get us key words and themes and images respectively.
             print("Analysing themes...\n")
             playlist_df['themes'] = playlist_df['lyrics'].apply(lambda x: get_themes(x) if x != None else None)
-            playlist_df.to_csv(playlist_name + '.csv')
 
             # Now we are going to look at all the themes of the lyrics and get GPT to summarise them for me, then put them into a list
             theme_summary = summarise_themes(playlist_df['themes']).split(", ")
@@ -261,6 +262,8 @@ def main():
             top_genres_temp = Counter(all_genres).most_common(2)
             top_genres = [genre[0] for genre in top_genres_temp]
 
+        # Writing the playlist to a csv file
+        playlist_df.to_csv(playlist_name + '.csv')
         # Now once we have everything ready to generate the playlist image, let's do it
         print("Generating images...\n")
         images = get_images(top_genres, theme_summary, features)
