@@ -161,7 +161,7 @@ def main():
     """
 
     """
-    playlist_uri = PROVINCIAL
+    playlist_uri = TECHNO
     username, playlist_id, playlist_name = playlist_uri.split(':')[1], playlist_uri.split(':')[4], playlist_uri.split(':')[2]
 
     # Checking to see if a dataframe has already been created for this playlist
@@ -232,7 +232,6 @@ def main():
         # Putting all features that aren't None in to a list
         features = [feature for feature in audio_feature_cats.values() if feature != None]
 
-        #! Need to test whether we have enough lyrics in the playlist to analyse
         print("Getting lyrics...\n")
         # Now that we have everything that we can get from the spotify API, we are going to grab some lyrics using Musixmatch's API
         playlist_df['lyrics'] = playlist_df.apply(lambda row: get_lyrics(row['name'], row['artists']), axis=1)
@@ -246,7 +245,7 @@ def main():
         theme_summary = summarise_themes(playlist_df['themes']).split(", ")
 
         # Cleaning each string of genres and getting them all into individual strings (some returned a list of multiple genres)
-        genres_temp = [str(genre.strip("[]")).split(", ") for genre in playlist_df['genres']]
+        genres_temp = [str(genre).strip("[]").split(", ") for genre in playlist_df['genres']]
         all_genres = [genre.strip("'") for genre in sum(genres_temp, [])]
 
         # Now let's get the 2 most common genres using the Counter module from collections
