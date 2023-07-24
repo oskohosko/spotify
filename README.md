@@ -31,13 +31,34 @@ The first batch using DALL-E 2 for my Aussie Indie playlist:
 Pretty average to be honest. But things worked a bit better for my techno playlist.
 <br>
 <p float="left">
-  <img src="techno/1 2.png" width=100 />
-  <img src="" width=100 />
-  <img src="" width=100 />
-  <img src="" width=100 />
+  <img src="techno/1-2.png" width=100 />
+  <img src="techno/2-2.png" width=100 />
+  <img src="techno/3-2.png" width=100 />
+  <img src="techno/4-2.png" width=100 />
+</p>
+These, to me, seem a little bit more technoey and worthy of a cover image for a playlist.
+
+After testing out for a while more, I decided to use Midjourney again just to see the comparison. And was there a lot to compare. 
+Midjourney's photos are so so much better and while my code still works and can generate photos, I decided to change it up to create a prompt I could simply copy and paste into Midjourney for a better set of photos.
+
+Here are what Midjourney generated for the same Aussie Indie playlist:
+
+<p float="left">
+  <img src="provincial/1.png" width=100 />
+  <img src="provincial/2.png" width=100 />
+  <img src="provincial/3.png" width=100 />
+  <img src="provincial/4.png" width=100 />
 </p>
 <br>
-
+And the same for the techno playlist:
+<br>
+<p float="left">
+  <img src="techno/1.png" width=100 />
+  <img src="techno/2.png" width=100 />
+  <img src="techno/3.png" width=100 />
+  <img src="techno/4.png" width=100 />
+</p>
+<br>
 # Try it
 
 If you want to try this yourself you'll need to sign up to get API keys from Spotify, Musixmatch and OpenAI.
