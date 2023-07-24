@@ -20,7 +20,23 @@ Once this was all summarised it was perfect for me to now try to generate an ima
 I messed around with the prompts, with a lot of trial and error trying to get a prompt that effectively combines all of the playlist data I had gathered. I'm sure there are better prompts out there and I reckon my prompt engineering needs some work but I was able to get DALL-E 2 to generate some cool images. Here are a few.
 
 The first batch using DALL-E 2 for my Aussie Indie playlist:
-![image 1](
+<br>
+<p float="left">
+  <img src="provincial/img-DuvQzbcyGhJrIZzu4OelWt1E.png" width=100 />
+  <img src="provincial/img-FwKy9rDvwLAcnr4mqjw6UHsL.png" width=100 />
+  <img src="provincial/img-VefjVTtADjuWEpPQxNXzvxo6.png" width=100 />
+  <img src="provincial/img-YoT3H1DR4s2Cd2HIMBNAg2Gk.png" width=100 />
+</p>
+<br>
+Pretty average to be honest. But things worked a bit better for my techno playlist.
+<br>
+<p float="left">
+  <img src="techno/1 2.png" width=100 />
+  <img src="" width=100 />
+  <img src="" width=100 />
+  <img src="" width=100 />
+</p>
+<br>
 
 # Try it
 
