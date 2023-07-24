@@ -168,7 +168,7 @@ def make_prompt(genres, themes, audio_features):
     Makes a potential prompt using the genres, themes and audio features of a playlist.
     Prompt rather than image as Midjourney is so much better than any others.
     """
-    return f'Spotify album cover image. The genresare {genres}. The album is about {themes} and its {audio_features}.'
+    return f'Spotify album cover image. The genres are {genres}. The album is about {themes} and its {audio_features}.'
 
 
 
@@ -176,7 +176,7 @@ def main():
     """
 
     """
-    playlist_uri = TECHNO
+    playlist_uri = PROVINCIAL
     username, playlist_id, playlist_name = playlist_uri.split(':')[1], playlist_uri.split(':')[4], playlist_uri.split(':')[2]
 
     print(f'Analysing playlist {playlist_name}...\n')
@@ -249,7 +249,7 @@ def main():
         features = [feature for feature in audio_feature_cats.values() if feature != None]
 
         # Checks if lyrics are worth analysing
-        if "Instrumental" in features or "Very Instrumental" in features or "Moderately Instrumental":
+        if "Instrumental" in features or "Very Instrumental" in features:
             print("Skipping lyrics as playlist is instrumental.\n")
             theme_summary = "Instrumental and Abstract"
         else:
@@ -257,7 +257,6 @@ def main():
             # Now that we have everything that we can get from the spotify API, we are going to grab some lyrics using Musixmatch's API
             playlist_df['lyrics'] = playlist_df.apply(lambda row: get_lyrics(row['name'], row['artists']), axis=1)
 
-            playlist_df.to_csv(playlist_name + '.csv')
             # Onto the OpenAI section. This is where we will be using GPT and DALLE to get us key words and themes and images respectively.
             print("Analysing themes...\n")
             playlist_df['themes'] = playlist_df['lyrics'].apply(lambda x: get_themes(x) if x != None else None)
@@ -271,6 +270,8 @@ def main():
 
         # Now let's get the 5 most common genres using the Counter module from collections
         top_genres = Counter(all_genres).most_common(2)
+
+        playlist_df.to_csv(playlist_name + '.csv')
 
         print("Analysis Complete! \n")
         print(f"Top genres: {top_genres}\n")
