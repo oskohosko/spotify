@@ -64,7 +64,8 @@ And here's what one of the images looks like on my techno playlist on spotify.
 <br>
 <img src="techno/technospotify.png" width=400 />
 <br>
-# Try it
+
+# Try it out
 
 If you want to try this yourself you'll need to sign up to get API keys from Spotify, Musixmatch and OpenAI.
 I'll drop the links below:
