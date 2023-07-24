@@ -168,7 +168,7 @@ def make_prompt(genres, themes, audio_features):
     Makes a potential prompt using the genres, themes and audio features of a playlist.
     Prompt rather than image as Midjourney is so much better than any others.
     """
-    return f'A spotify album cover image. The genres of the album are {genres}. The album is about {themes} and its {audio_features}'
+    return f'Spotify album cover image. The genresare {genres}. The album is about {themes} and its {audio_features}.'
 
 
 
@@ -176,7 +176,7 @@ def main():
     """
 
     """
-    playlist_uri = "spotify:Connor_Beadman:TheRequiem:playlist:7GzMbetUaxawX2MUyar5GA"
+    playlist_uri = TECHNO
     username, playlist_id, playlist_name = playlist_uri.split(':')[1], playlist_uri.split(':')[4], playlist_uri.split(':')[2]
 
     print(f'Analysing playlist {playlist_name}...\n')
@@ -249,9 +249,9 @@ def main():
         features = [feature for feature in audio_feature_cats.values() if feature != None]
 
         # Checks if lyrics are worth analysing
-        if "Instrumental" in features or "Very Instrumental" in features:
+        if "Instrumental" in features or "Very Instrumental" in features or "Moderately Instrumental":
             print("Skipping lyrics as playlist is instrumental.\n")
-            theme_summary = "Instrumental, Abstract"
+            theme_summary = "Instrumental and Abstract"
         else:
             print("Getting lyrics...\n")
             # Now that we have everything that we can get from the spotify API, we are going to grab some lyrics using Musixmatch's API
@@ -276,8 +276,8 @@ def main():
         print(f"Top genres: {top_genres}\n")
         print(f"Interesting features: {features}\n")
         print(f"Themes of the playlist: {theme_summary}\n")
-        print(f"Here is a potential prompt:\n{make_prompt(top_genres, theme_summary, features)}")
-        print("CSV File in directory!")
+        print(f"Here is a potential prompt:\n{make_prompt(top_genres, theme_summary, features)}\n")
+        print("CSV file made and in directory!")
 
         # Commenting out the image generation as it's not very effective. Better to get the data and manually generate the photos
         """
