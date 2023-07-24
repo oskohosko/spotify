@@ -59,6 +59,11 @@ And the same for the techno playlist:
   <img src="techno/4.png" width=100 />
 </p>
 <br>
+And here's what one of the images looks like on my techno playlist on spotify.
+<br>
+<br>
+<img src="techno/technospotify.png" width=400 />
+<br>
 # Try it
 
 If you want to try this yourself you'll need to sign up to get API keys from Spotify, Musixmatch and OpenAI.
